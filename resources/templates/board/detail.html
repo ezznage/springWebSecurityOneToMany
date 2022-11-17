@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+	  xmlns:th="http://www.thymeleaf.org">
+<head>
+	<th:block th:insert="~{layout/default::head}"/>
+	<style type="text/css">
+		#edit-mode {
+			display: none;
+		}
+	</style>
+	<script type="text/javascript">
+		$(function () {
+			$("#btn-edit").click(editMode);
+			$("#btn-cancel").click(function () {
+				$("#edit-mode").hide();
+				$("#def-mode").show();
+			});
+		});
+
+		function editMode() {
+			$("#edit-mode").show();
+			$("#def-mode").hide();
+		}
+
+	</script>
+</head>
+<body>
+<th:block th:insert="layout/default::header"/>
+<main>
+	<h1>메인영역</h1>
+	<div class="wrap view-size">
+	<div sec:authorize="hasRole('USER')">
+			<!--현재 접속유저의 username == 작성자email 일치한 경우 수정버튼 활성화-->
+			<!--#authentication.name(로그인시아이디) , #authentication.principal.email 은 같은 데이터를 가리킴-->
+			<span th:if="${#authentication.name == detail.writerEmail}">
+				<button type="button" id="btn-edit">수정</button>
+			</span>
+		</div>
+		<div sec:authorize="hasRole('USER')">
+			<th:block th:if="${#authentication.name == detail.writerEmail or #authorization.expr('hasRole(''ADMIN'')')}">
+				<form th:action="|/boards/${detail.bno}|" method="post">
+					<input type="hidden" name="_method" value="delete">
+					<button>삭제1</button>
+				</form>
+			</th:block>
+		</div>
+		<form id="edit-mode" th:action="|/boards/${detail.bno}|" method="post">
+			<table border="1">
+				<tr>
+					<td>글번호</td>
+					<td th:text="${detail.bno}"></td>
+				</tr>
+				<tr>
+					<td>작성일</td>
+					<td th:text="${detail.createdDate}"></td>
+				</tr>
+				<tr>
+
+					<td>수정일</td>
+					<td th:text="${detail.updatedDate}"></td>
+				</tr>
+				<tr>
+					<td>조회수</td>
+					<td th:text="${detail.readCount}"></td>
+				</tr>
+				<tr>
+					<td>작성자</td>
+					<td th:text="${detail.writerNickName}"></td>
+				</tr>
+				<tr>
+					<td>제목</td>
+					<td>
+						<input type="text" name="title" th:value="${detail.title}">
+					</td>
+				</tr>
+
+				<tr>
+					<td>내용</td>
+					<td>
+						<textarea rows="5" cols="50" name="content">[[${detail.content}]]</textarea>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2">
+						<!--
+						<input type="hidden"
+							   th:name="${_csrf.parameterName}"
+							   th:value="${_csrf.token}"/>
+						-->
+						<input type="hidden" name="_method" value="put">
+						<button type="submit">수정완료</button>
+						<button type="button" id="btn-cancel">취소</button>
+					</td>
+				</tr>
+			</table>
+		</form>
+		
+		<!--		/////////////////////////////////-->
+		<table border="1" id="def-mode">
+			<tr>
+				<td>글번호</td>
+				<td th:text="${detail.bno}"></td>
+			</tr>
+			<tr>
+				<td>작성일</td>
+				<td th:text="${detail.createdDate}"></td>
+			</tr>
+			<tr>
+
+				<td>수정일</td>
+				<td th:text="${detail.updatedDate}"></td>
+			</tr>
+			<tr>
+				<td>조회수</td>
+				<td th:text="${detail.readCount}"></td>
+			</tr>
+			<tr>
+				<td>작성자</td>
+				<td th:text="${detail.writerNickName}"></td>
+			</tr>
+			<tr>
+				<td>제목</td>
+				<td th:text="${detail.title}"></td>
+			</tr>
+
+			<tr>
+				<td>내용</td>
+				<td th:text="${detail.content}"></td>
+			</tr>
+
+		</table>
+		<div>
+			<p>댓글</p>
+			<hr />
+			<form th:action="|/boards/${detail.bno}/replies|" method="post">
+				<input type="text" name="text" placeholder="댓글등록">
+				<button>등록</button>
+			</form>
+			<hr>
+			<table border="1">
+				<tr>
+					<td>댓글번호</td>
+					<td>내용</td>
+					<td>작성자</td>
+					<td>작성일</td>
+				</tr>
+				<tr th:each="r : ${detail.replies}">
+					<td th:text="${r.rno}">댓글번호</td>
+					<td th:text="${r.text}">내용</td>
+					<td th:text="${r.writer}">작성자</td>
+					<td th:text="${r.updatedDate}">작성일</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</main>
+	
+</body>
+</html>
